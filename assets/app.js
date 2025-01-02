@@ -10,6 +10,27 @@ const CB = parseInt(+new Date() / (1000 * 3600)).toString(36)
 
 const CACHE = {}
 
+const IMG_HOSTS = {};
+
+if (!location.host.startsWith("localhost")) {
+    Object.assign(IMG_HOSTS, {
+        "2021": "archiv0.derrosarotepanzer.com",
+        "2022": "archiv0.derrosarotepanzer.com",
+        "2023": "archiv0.derrosarotepanzer.com",
+        "2024": "archiv0.derrosarotepanzer.com",
+        "2025": "archiv1.derrosarotepanzer.com",
+        "2026": "archiv1.derrosarotepanzer.com",
+        "2027": "archiv2.derrosarotepanzer.com",
+        "2028": "archiv2.derrosarotepanzer.com",
+        "2029": "archiv3.derrosarotepanzer.com",
+        "2030": "archiv3.derrosarotepanzer.com",
+        "2031": "archiv4.derrosarotepanzer.com",
+        "2032": "archiv4.derrosarotepanzer.com",
+        "2033": "archiv5.derrosarotepanzer.com",
+        "2034": "archiv5.derrosarotepanzer.com",
+    });
+}
+
 async function fetchJson(path) {
     if (!CACHE[path]) {
         const promise = await fetch(path)
@@ -43,14 +64,18 @@ async function updateDataSources(itemIndex) {
     const entryPromises = []
     const thumbSrcs = []
 
+    const fallbackHost = location.protocol + "//" + location.host
+
     for (var i = dirCursor; i >= Math.max(0, dirCursor - 1); i--) {
         var dirName = GALLERY_STATE.dirNames[i]
         dirNames.push(dirName)
 
-        var dirURL = `images/${dirName}/entry_index.json?cb=${CB}`
+        var host = IMG_HOSTS[dirName.split("/")[0]] || fallbackHost;
+
+        var dirURL = `${host}/images/${dirName}/entry_index.json?cb=${CB}`
         entryPromises.push(fetchJson(dirURL))
 
-        var thumbSrc = `images/${dirName}/thumbnails.jpg?cb=${CB}`
+        var thumbSrc = `${host}/images/${dirName}/thumbnails.jpg?cb=${CB}`
         thumbSrcs.push(thumbSrc)
 
         new Image().src = thumbSrc;
@@ -65,10 +90,12 @@ async function updateDataSources(itemIndex) {
         var entryIndex = entryIndexes[i]
         var thumbSrc = thumbSrcs[i]
 
+        var host = IMG_HOSTS[dirName.split("/")[0]] || fallbackHost;
+
         for (var j = entryIndex.length - 1; j >= 0; j--) {
             var entry = entryIndex[j]
             dataSourceItems.push({
-                src: `images/${dirName}/${entry.name}`,
+                src: `${host}/images/${dirName}/${entry.name}`,
                 width: entry.w,
                 height: entry.h,
                 bgOffsetX: entry.x,
